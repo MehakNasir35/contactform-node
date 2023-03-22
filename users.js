@@ -31,11 +31,36 @@ router.post('/user', function (req, res) {
 });
 
 router.put('/user', function (req, res) {
-    res.send('update request')
+    var data = fs.readFileSync('data.json');
+    //convert to json format
+    var jsonData = JSON.parse(data);
+
+    user = jsonData.find(jsonData => jsonData.id == req.body.id)
+
+    jsonData[jsonData.indexOf(user)] = req.body
+
+    var newData = JSON.stringify(jsonData);
+
+    fs.writeFile('data.json', newData, 'utf8', function (err) {
+        if (err) throw err;
+        // If no error
+        res.end(newData)
+    });
+
 });
 
-router.delete('/user', function (req, res) {
-    res.send('delete request')
+router.delete('/user/:id', function (req, res) {
+    var data = fs.readFileSync('data.json');
+    //convert to json format
+    var jsonData = JSON.parse(data);
+    var result = jsonData.filter(jsonData => jsonData.id != req.params.id);
+    var newData = JSON.stringify(result);
+
+    fs.writeFile('data.json', newData, 'utf8', function (err) {
+        if (err) throw err;
+        // If no error
+        res.end(newData)
+    });
 });
 
 router.get('/user/:id', function (req, res) {
