@@ -9,41 +9,50 @@ const users = require("./users")
 const app = express()
 const port = 5000
 
-app.use(cors())
-app.use(cookiesParser())
+const corsOptions = {
+    credentials: true,
+};
 
-app.use(bodyParser.json({ type: ["application/json", "application/csp-report"] }));
+app.use(cors(corsOptions));
+
+app.use(cookiesParser());
+
+app.use(bodyParser.json({ type: ["application/json"] }));
 
 const secretKey = "secretKey";
 
-app.get("/login", async (req, res) => {
+app.post("/login", async (req, res) => {
+
     const user = {
-        username: "mn",
-        password: "12345",
-        email: "mehak@gmail.com",
+        password: req.body.password,
+        email: req.body.email,
     };
 
-    jwt.sign(user, secretKey, { expiresIn: "400s" }, (er, token) => {
-        if(er)
-        res.send("Cannot Login");
-        
-        res.cookie("jwt", token);
+    jwt.sign(user, secretKey, { maxAge: 360000 }, (er, token) => {
+        if (er)
+            res.send("Cannot Login");
+
+        res.cookie('jwt', token)
         res.send("User Logged In");
     });
+
 });
 
 const verifyToken = (req, res, next) => {
-    const token = req.cookies.jwt;
-    
-    if (!token) {
+console.log(req)
+    const authcookie = req.cookies.jwt
+    console.log(req.cookies)
+
+    if (!authcookie) {
         res.status(401).send("Invalid Token");
     }
 
-    jwt.verify(token, secretKey, (err, authData) => {
+    jwt.verify(authcookie, secretKey, (err, authData) => {
+        console.log(err)
         if (err) {
-            res.status(401).send("Invalid Token");
+            res.status(401).send("Invalid Token")
         } else {
-            req.authData = authData;
+            req.authData = authData
             next();
         }
     });
