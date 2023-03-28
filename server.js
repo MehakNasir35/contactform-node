@@ -9,12 +9,12 @@ const users = require("./users")
 const app = express()
 const port = 5000
 
-const corsOptions = {
-    credentials: true,
+var corsOptions = {
+    credentials: true
 };
 
 app.use(cors(corsOptions));
-
+app.options('*', cors(corsOptions))
 app.use(cookiesParser());
 
 app.use(bodyParser.json({ type: ["application/json"] }));
@@ -28,20 +28,20 @@ app.post("/login", async (req, res) => {
         email: req.body.email,
     };
 
-    jwt.sign(user, secretKey, { maxAge: 360000 }, (er, token) => {
+    jwt.sign(user, secretKey,  { expiresIn: "400s" }, (er, token) => {
         if (er)
             res.send("Cannot Login");
 
-        res.cookie('jwt', token)
-        res.send("User Logged In");
+        res.cookie("jwt", token);
+
+        res.send("logged In");
     });
 
 });
 
 const verifyToken = (req, res, next) => {
-console.log(req)
+    console.log('cookie',req)
     const authcookie = req.cookies.jwt
-    console.log(req.cookies)
 
     if (!authcookie) {
         res.status(401).send("Invalid Token");
