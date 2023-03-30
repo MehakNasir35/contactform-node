@@ -3,6 +3,14 @@ const jwt = require("jsonwebtoken");
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const cookiesParser = require("cookie-parser");
+require('dotenv').config()
+
+const mongoose = require('mongoose');
+mongoose.connect(process.env.DB_URL);
+const db = mongoose.connection
+
+db.on('connected', () => console.log("connect"))
+db.on('error', (e) => console.log(e))
 
 const users = require("./users")
 
@@ -19,6 +27,7 @@ app.use(cookiesParser());
 
 app.use(bodyParser.json({ type: ["application/json"] }));
 
+
 const secretKey = "secretKey";
 
 app.post("/login", async (req, res) => {
@@ -28,7 +37,7 @@ app.post("/login", async (req, res) => {
         email: req.body.email,
     };
 
-    jwt.sign(user, secretKey,  { expiresIn: "400s" }, (er, token) => {
+    jwt.sign(user, secretKey, (er, token) => {
         if (er)
             res.send("Cannot Login");
 
@@ -40,15 +49,12 @@ app.post("/login", async (req, res) => {
 });
 
 const verifyToken = (req, res, next) => {
-    console.log('cookie',req)
     const authcookie = req.cookies.jwt
-
     if (!authcookie) {
         res.status(401).send("Invalid Token");
     }
 
     jwt.verify(authcookie, secretKey, (err, authData) => {
-        console.log(err)
         if (err) {
             res.status(401).send("Invalid Token")
         } else {
