@@ -14,7 +14,7 @@ var corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions))
+// app.options('*', cors(corsOptions))
 app.use(cookiesParser());
 
 app.use(bodyParser.json({ type: ["application/json"] }));
@@ -28,7 +28,7 @@ app.post("/login", async (req, res) => {
         email: req.body.email,
     };
 
-    jwt.sign(user, secretKey,  { expiresIn: "400s" }, (er, token) => {
+    jwt.sign(user, secretKey, (er, token) => {
         if (er)
             res.send("Cannot Login");
 
@@ -40,7 +40,6 @@ app.post("/login", async (req, res) => {
 });
 
 const verifyToken = (req, res, next) => {
-    console.log('cookie',req)
     const authcookie = req.cookies.jwt
 
     if (!authcookie) {
@@ -48,7 +47,6 @@ const verifyToken = (req, res, next) => {
     }
 
     jwt.verify(authcookie, secretKey, (err, authData) => {
-        console.log(err)
         if (err) {
             res.status(401).send("Invalid Token")
         } else {
